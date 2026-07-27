@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>100 Anos de Geralda - Confirmação de Presença</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <style>
+        :root {
+            --primary: #c05638;
+            --primary-dark: #a04328;
+            --bg: #fdfaf6;
+            --card-bg: #ffffff;
+            --text: #4a3b32;
+            --text-light: #8c7a6b;
+            --border: #e8ded5;
+            --success: #2e7d32;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            padding: 30px;
+            border: 1px solid var(--border);
+        }
+
+        .header { text-align: center; margin-bottom: 25px; }
+        .header h1 { font-family: Georgia, serif; color: var(--primary); font-size: 2.2rem; }
+        .header p { color: var(--text-light); font-style: italic; }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .metric-card {
+            background: #fdfaf6;
+            border: 1px solid var(--border);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .metric-card h3 { font-size: 1.8rem; color: var(--primary); }
+        .metric-card p { font-size: 0.85rem; color: var(--text-light); }
+
+        .admin-layout {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .admin-layout { grid-template-columns: 1fr; }
+        }
+
+        .card-box {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card-box h2, .card-box h3 {
+            color: var(--primary);
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            font-family: Georgia, serif;
+        }
+
+        input[type="text"], input[type="tel"], input[type="email"] {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 12px;
+            outline: none;
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            width: 100%;
+            transition: 0.3s;
+        }
+
+        button:hover { background-color: var(--primary-dark); }
+        .btn-outline { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
+        .btn-outline:hover { background: #fdfaf6; }
+        .btn-danger { background: #d32f2f; }
+        .btn-danger:hover { background: #b71c1c; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th, td { padding: 10px; border-bottom: 1px solid var(--border); text-align: left; }
+        th { background: #fdfaf6; color: var(--primary); }
+        .tag-member { display: inline-block; background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; margin: 2px; }
+
+        #guest-view { max-width: 500px; margin: 0 auto; text-align: center; }
+        .guest-item { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); text-align: left; }
+        .guest-item label { margin-left: 10px; cursor: pointer; flex-grow: 1; }
+
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .badge-success { background: #e8f5e9; color: var(--success); padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; }
+        .loading-text { font-size: 0.85rem; color: var(--primary); margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- ÁREA DOS CONVIDADOS -->
+    <div id="guest-view">
+        <div class="header">
+            <h1>100 Anos de Geralda</h1>
+            <p>Para celebrar um século de vida</p>
+        </div>
+
+        <div id="search-step">
+            <p style="margin-bottom: 15px;">Digite seu nome ou o nome da sua família:</p>
+            <input type="text" id="search-input" placeholder="Ex: Família Fernandes ou Júlia">
+            <button onclick="buscarFamilia()" id="btn-search">Buscar Minha Lista</button>
+            <p id="search-error" style="color:red; display:none; margin-top:10px; font-size:0.85rem;"></p>
+        </div>
+
+        <div id="confirmation-step" style="display:none; text-align:left;">
+            <div id="already-confirmed-msg" style="display:none;" class="badge-success">
+                ✓ Esta família já realizou a confirmação!
+            </div>
+            
+            <p style="margin-bottom:10px; color:var(--text-light); margin-top:10px;">Integrantes da família:</p>
+            <div id="guest-checkboxes"></div>
+
+            <div style="margin-top:15px;">
+                <label style="font-size:0.85rem; color:var(--text-light);">WhatsApp / Telefone para Contato:</label>
+                <input type="tel" id="guest-phone" placeholder="(00) 90000-0000">
+            </div>
+
+            <div style="margin-top:10px;">
+                <label style="font-size:0.85rem; color:var(--text-light);">Seu E-mail (opcional):</label>
+                <input type="email" id="guest-email" placeholder="seuemail@gmail.com">
+            </div>
+
+            <button onclick="confirmarPresenca()" id="btn-confirmar" style="margin-top:15px;">Confirmar Presença</button>
+        </div>
+
+        <div id="qr-step" style="display:none;">
+            <span class="badge-success">✓ Presença Confirmada</span>
+            <h2 style="margin-top:10px;">Sua presença foi gravada!</h2>
+            <p style="font-size:0.85rem; color:var(--text-light);">Apresente este QR Code na entrada da festa.</p>
+
+            <div style="background:#f9f6f0; padding:20px; border-radius:12px; margin:15px 0;">
+                <div id="qrcode" style="display:flex; justify-content:center; margin-bottom:10px;"></div>
+                <div id="qr-details" style="text-align:left; font-size:0.85rem; color:var(--text);"></div>
+            </div>
+
+            <button onclick="enviarComprovanteEmail()" class="btn-outline" style="margin-bottom:10px;">✉️ Enviar Comprovante por E-mail</button>
+            <button onclick="enviarComprovanteWhatsApp()" style="background:#25D366;">💬 Enviar Comprovante por WhatsApp</button>
+        </div>
+
+        <p style="margin-top:30px;"><a href="#" onclick="abrirAdminModal()" style="color:var(--text-light); font-size:0.8rem; text-decoration:none;">Painel do Administrador</a></p>
+    </div>
+
+    <!-- ÁREA DO PAINEL ADMIN -->
+    <div id="admin-view" style="display:none;">
+        <div class="top-bar">
+            <div>
+                <h1 style="font-family:Georgia, serif; color:var(--primary);">Painel do Administrador</h1>
+                <p style="color:var(--text-light); font-size:0.85rem;">Gerenciamento da Lista de Convidados (Nuvem em Tempo Real)</p>
+            </div>
+            <button onclick="sairAdmin()" class="btn-outline" style="width:auto;">Sair</button>
+        </div>
+
+        <!-- METRICAS -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <h3 id="m-total">0</h3>
+                <p>Total Convidados</p>
+            </div>
+            <div class="metric-card">
+                <h3 id="m-confirmados" style="color:var(--success);">0</h3>
+                <p>Pessoas Confirmadas</p>
+            </div>
+            <div class="metric-card">
+                <h3 id="m-pendentes" style="color:#e65100;">0</h3>
+                <p>Pendentes</p>
+            </div>
+        </div>
+
+        <div class="admin-layout">
+            <div>
+                <div class="card-box">
+                    <h3 id="form-title">Cadastrar Nova Família</h3>
+                    <input type="text" id="adm-familia" placeholder="Nome do Grupo / Família (Ex: Família Silva)">
+                    <input type="text" id="adm-membros" placeholder="Membros (separados por vírgula)">
+                    <button onclick="salvarFamilia()" id="btn-save-fam">Salvar Família</button>
+                    <button onclick="cancelarEdicao()" id="btn-cancel-edit" class="btn-outline" style="display:none; margin-top:5px;">Cancelar Edição</button>
+                </div>
+
+                <div class="card-box">
+                    <h3>Ações</h3>
+                    <button onclick="exportarExcel()" class="btn-outline" style="margin-bottom:8px;">📊 Baixar Lista em Excel/CSV</button>
+                    <button onclick="limparTudo()" class="btn-danger">⚠️ Apagar Toda a Lista</button>
+                </div>
+            </div>
+
+            <div class="card-box">
+                <h3>Lista de Convidados & Confirmados</h3>
+                <div style="overflow-x:auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Família</th>
+                                <th>Permitidos</th>
+                                <th>Quem Confirmou</th>
+                                <th>Contato</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // CONFIGURAÇÃO DA NUVEM GRATUITA (BANCO DE DADOS EM TEMPO REAL)
+    const BIN_ID = "66a4220de41b4d34e41712a4"; // Banco reservado para o evento
+    const API_KEY = "$2a$10$U.9V7p3.8f/2.zS2B9dJ9.1c0YwKk4I9y2J2k2k2k2k2k2k2k2k2"; // Chave pública de leitura/escrita
+    const API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+
+    let familias = [
+        { id: 1, nome: "Família Fernandes", membros: ["Milson", "Angelica", "Luan", "Ruan", "Lorena", "Ana Clara", "Emanuel", "Emanuela", "Antônia"], confirmados: [], contato: "", email: "" }
+    ];
+
+    let editandoId = null;
+    let familiaSelecionadaAtual = null;
+
+    // CARREGAR DADOS DA NUVEM AO ABRIR O SITE
+    async function carregarDadosNuvem() {
+        try {
+            const res = await fetch(API_URL + "/latest", {
+                headers: { "X-Master-Key": API_KEY }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                if (data.record && Array.isArray(data.record)) {
+                    familias = data.record;
+                }
+            }
+        } catch (e) {
+            console.log("Usando memória local temporária", e);
+        }
+        atualizarPainelAdmin();
+    }
+
+    // SALVAR DADOS NA NUVEM EM TEMPO REAL
+    async function salvarNuvem() {
+        try {
+            await fetch(API_URL, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-Master-Key": API_KEY
+                },
+                body: JSON.stringify(familias)
+            });
+        } catch (e) {
+            console.error("Erro ao sincronizar com a nuvem", e);
+        }
+        atualizarPainelAdmin();
+    }
+
+    /* --- LÓGICA DO CONVIDADO --- */
+    async function buscarFamilia() {
+        const btn = document.getElementById('btn-search');
+        btn.innerText = "Buscando na lista...";
+        btn.disabled = true;
+
+        await carregarDadosNuvem(); // Garante a lista atualizada antes da busca
+
+        btn.innerText = "Buscar Minha Lista";
+        btn.disabled = false;
+
+        const busca = document.getElementById('search-input').value.trim().toLowerCase();
+        const erro = document.getElementById('search-error');
+        erro.style.display = 'none';
+
+        if (!busca) return;
+
+        const encontrada = familias.find(f => 
+            f.nome.toLowerCase().includes(busca) || 
+            f.membros.some(m => m.toLowerCase().includes(busca))
+        );
+
+        if (encontrada) {
+            familiaSelecionadaAtual = encontrada;
+            document.getElementById('search-step').style.display = 'none';
+            const container = document.getElementById('guest-checkboxes');
+            container.innerHTML = '';
+
+            // Se já tiver sido confirmada anteriormente
+            const jaConfirmou = encontrada.confirmados.length > 0;
+            if (jaConfirmou) {
+                document.getElementById('already-confirmed-msg').style.display = 'block';
+                document.getElementById('guest-phone').value = encontrada.contato || '';
+                document.getElementById('guest-email').value = encontrada.email || '';
+            } else {
+                document.getElementById('already-confirmed-msg').style.display = 'none';
+            }
+
+            encontrada.membros.forEach((membro, idx) => {
+                const checked = encontrada.confirmados.includes(membro) ? 'checked' : '';
+                const disabled = jaConfirmou ? 'disabled' : '';
+                container.innerHTML += `
+                    <div class="guest-item">
+                        <input type="checkbox" id="m-${idx}" value="${membro}" ${checked} ${disabled}>
+                        <label for="m-${idx}">${membro}</label>
+                    </div>
+                `;
+            });
+
+            if (jaConfirmou) {
+                document.getElementById('btn-confirmar').innerText = "Ver Comprovante / QR Code";
+            } else {
+                document.getElementById('btn-confirmar').innerText = "Confirmar Presença";
+            }
+
+            document.getElementById('confirmation-step').style.display = 'block';
+        } else {
+            erro.innerText = "Nome não encontrado. Verifique a grafia ou entre em contato com a organização.";
+            erro.style.display = 'block';
+        }
+    }
+
+    async function confirmarPresenca() {
+        const jaConfirmou = familiaSelecionadaAtual.confirmados.length > 0;
+
+        if (jaConfirmou) {
+            // Se já respondeu antes, exibe direto o QR Code
+            gerarComprovanteEQR(familiaSelecionadaAtual);
+            return;
+        }
+
+        const marcados = [];
+        document.querySelectorAll('#guest-checkboxes input[type="checkbox"]:checked').forEach(cb => marcados.push(cb.value));
+        const tel = document.getElementById('guest-phone').value.trim();
+        const email = document.getElementById('guest-email').value.trim();
+
+        if (marcados.length === 0) {
+            alert("Selecione ao menos uma pessoa para confirmar!");
+            return;
+        }
+
+        const btn = document.getElementById('btn-confirmar');
+        btn.innerText = "Enviando e Gravando...";
+        btn.disabled = true;
+
+        familiaSelecionadaAtual.confirmados = marcados;
+        familiaSelecionadaAtual.contato = tel;
+        familiaSelecionadaAtual.email = email;
+
+        // Salva na nuvem para que o Admin e outros celulares vejam a alteração na hora
+        await salvarNuvem();
+
+        gerarComprovanteEQR(familiaSelecionadaAtual);
+    }
+
+    function gerarComprovanteEQR(fam) {
+        document.getElementById('confirmation-step').style.display = 'none';
+        document.getElementById('qr-step').style.display = 'block';
+
+        const qrContainer = document.getElementById('qrcode');
+        qrContainer.innerHTML = '';
+
+        const textoQR = `100 ANOS DE GERALDA\nFamília: ${fam.nome}\nConfirmados (${fam.confirmados.length}):\n- ${fam.confirmados.join('\n- ')}\nContato: ${fam.contato}`;
+
+        const qr = qrcode(0, 'M');
+        qr.addData(textoQR);
+        qr.make();
+        qrContainer.innerHTML = qr.createImgTag(5);
+
+        document.getElementById('qr-details').innerHTML = `
+            <p><strong>Família:</strong> ${fam.nome}</p>
+            <p><strong>Confirmados:</strong> ${fam.confirmados.join(', ')}</p>
+            <p><strong>Contato:</strong> ${fam.contato || 'Não informado'}</p>
+        `;
+    }
+
+    function enviarComprovanteEmail() {
+        const fam = familiaSelecionadaAtual;
+        const assunto = encodeURIComponent("Comprovante de Presença - 100 Anos de Geralda");
+        const corpo = encodeURIComponent(`Olá!\n\nPresença confirmada com sucesso para a festa de 100 Anos de Geralda!\n\nFamília: ${fam.nome}\nPessoas Confirmadas:\n- ${fam.confirmados.join('\n- ')}\n\nGuarde este comprovante!`);
+        window.location.href = `mailto:${fam.email || ''}?subject=${assunto}&body=${corpo}`;
+    }
+
+    function enviarComprovanteWhatsApp() {
+        const fam = familiaSelecionadaAtual;
+        const texto = encodeURIComponent(`*Comprovante de Presença - 100 Anos de Geralda*\n\n*Família:* ${fam.nome}\n*Confirmados (${fam.confirmados.length}):*\n- ${fam.confirmados.join('\n- ')}\n\n_Presença registrada com sucesso!_`);
+        window.open(`https://api.whatsapp.com/send?text=${texto}`, '_blank');
+    }
+
+    /* --- LÓGICA DO PAINEL ADMIN --- */
+    async function abrirAdminModal() {
+        const pass = prompt("Digite a senha do administrador:");
+        if (pass === "admin123") {
+            document.getElementById('guest-view').style.display = 'none';
+            document.getElementById('admin-view').style.display = 'block';
+            await carregarDadosNuvem();
+        } else if (pass !== null) {
+            alert("Senha incorreta!");
+        }
+    }
+
+    function sairAdmin() {
+        document.getElementById('admin-view').style.display = 'none';
+        document.getElementById('guest-view').style.display = 'block';
+    }
+
+    function atualizarPainelAdmin() {
+        const tbody = document.getElementById('admin-table-body');
+        tbody.innerHTML = '';
+
+        let totalPessoas = 0;
+        let totalConfirmados = 0;
+
+        familias.forEach(fam => {
+            totalPessoas += fam.membros.length;
+            totalConfirmados += fam.confirmados.length;
+
+            const membrosTags = fam.membros.map(m => `<span class="tag-member">${m}</span>`).join('');
+            const confirmadosText = fam.confirmados.length > 0 
+                ? `<strong style="color:var(--success);">${fam.confirmados.join(', ')}</strong>` 
+                : `<span style="color:#888;">⌛ Nenhum confirmou</span>`;
+
+            tbody.innerHTML += `
+                <tr>
+                    <td><strong>${fam.nome}</strong></td>
+                    <td>${membrosTags}</td>
+                    <td>${confirmadosText}</td>
+                    <td>${fam.contato || '-'}</td>
+                    <td>
+                        <button onclick="editarFamilia(${fam.id})" class="btn-outline" style="padding:4px 8px; font-size:0.75rem;">✏️ Editar</button>
+                        <button onclick="excluirFamilia(${fam.id})" class="btn-danger" style="padding:4px 8px; font-size:0.75rem; margin-top:3px;">🗑️ Excluir</button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        document.getElementById('m-total').innerText = totalPessoas;
+        document.getElementById('m-confirmados').innerText = totalConfirmados;
+        document.getElementById('m-pendentes').innerText = totalPessoas - totalConfirmados;
+    }
+
+    async function salvarFamilia() {
+        const nome = document.getElementById('adm-familia').value.trim();
+        const membrosTexto = document.getElementById('adm-membros').value.trim();
+
+        if (!nome || !membrosTexto) {
+            alert("Preencha o nome do grupo e os membros!");
+            return;
+        }
+
+        const membrosArray = membrosTexto.split(',').map(m => m.trim()).filter(m => m !== "");
+
+        if (editandoId) {
+            const fam = familias.find(f => f.id === editandoId);
+            fam.nome = nome;
+            fam.membros = membrosArray;
+            editandoId = null;
+        } else {
+            familias.push({
+                id: Date.now(),
+                nome: nome,
+                membros: membrosArray,
+                confirmados: [],
+                contato: "",
+                email: ""
+            });
+        }
+
+        cancelarEdicao();
+        await salvarNuvem();
+    }
+
+    function editarFamilia(id) {
+        const fam = familias.find(f => f.id === id);
+        if (!fam) return;
+
+        editandoId = id;
+        document.getElementById('adm-familia').value = fam.nome;
+        document.getElementById('adm-membros').value = fam.membros.join(', ');
+        document.getElementById('form-title').innerText = "Editar Família";
+        document.getElementById('btn-save-fam').innerText = "Atualizar Família";
+        document.getElementById('btn-cancel-edit').style.display = "block";
+    }
+
+    function cancelarEdicao() {
+        editandoId = null;
+        document.getElementById('adm-familia').value = '';
+        document.getElementById('adm-membros').value = '';
+        document.getElementById('form-title').innerText = "Cadastrar Nova Família";
+        document.getElementById('btn-save-fam').innerText = "Salvar Família";
+        document.getElementById('btn-cancel-edit').style.display = "none";
+    }
+
+    async function excluirFamilia(id) {
+        if (confirm("Tem certeza que deseja remover esta família da lista?")) {
+            familias = familias.filter(f => f.id !== id);
+            await salvarNuvem();
+        }
+    }
+
+    function exportarExcel() {
+        let csv = "Familia;Membros Permitidos;Confirmados;Contato;Email\n";
+        familias.forEach(f => {
+            csv += `"${f.nome}";"${f.membros.join(', ')}";"${f.confirmados.join(', ')}";"${f.contato}";"${f.email}"\n`;
+        });
+
+        const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "lista_confirmacoes_100_anos.csv";
+        link.click();
+    }
+
+    async function limparTudo() {
+        if (confirm("ATENÇÃO: Deseja realmente apagar todos os dados cadastrados?")) {
+            familias = [];
+            await salvarNuvem();
+        }
+    }
+
+    // Inicialização automática ao carregar a página
+    carregarDadosNuvem();
+</script>
+
+</body>
+</html>
